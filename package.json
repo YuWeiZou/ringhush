@@ -1,0 +1,21 @@
+{
+  "name": "dark-forest",
+  "version": "2.6.1-a19",
+  "private": true,
+  "type": "module",
+  "description": "黑暗森林 — 环形地图、同时行动、隐藏信息的在线桌游",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test test/engine.test.js test/ai.test.js",
+    "check:zones": "node tools/check-architecture.mjs",
+    "verify": "npm run check:zones && npm test",
+    "sim": "node ai/sim/run.js",
+    "gpu:check": "node ai/sim/gpu-check.mjs --load",
+    "ai:collect": "node ai/train/collect.mjs",
+    "ai:validate": "node tools/validate-ai-model.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

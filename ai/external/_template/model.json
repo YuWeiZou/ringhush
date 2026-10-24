@@ -1,0 +1,29 @@
+{
+  "id": "template",
+  "name": "模板模型",
+  "version": "1.0.0",
+  "description": "复制这个目录，改 id/name/style/rules。默认不进随机池。",
+  "style": {
+    "aggression": 0.55,
+    "observation": 0.5,
+    "hide": 0.5,
+    "trapCommit": 0.8,
+    "blindFire": 0.4,
+    "longArc": 0.6,
+    "compartmentClear": 0.6,
+    "bombCaution": 0.8
+  },
+  "rules": [
+    {
+      "when": {
+        "phase": 2,
+        "myComponentSize": { "lte": 4 },
+        "nearUnclearedCount": { "gte": 1 }
+      },
+      "style": {
+        "compartmentClear": 0.9,
+        "hide": 0.25
+      }
+    }
+  ]
+}
