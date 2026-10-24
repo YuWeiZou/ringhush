@@ -1,0 +1,13 @@
+{
+  "name": "《终于田园牧歌》",
+  "subtitle": "第一版 · 钢琴音乐盒",
+  "tracks": [
+    { "id": "menu", "title": "主大厅 · 余烬", "file": "bgm-menu.wav", "mp3": "bgm-menu.mp3" },
+    { "id": "room", "title": "房间 · 未寄出的信", "file": "bgm-room.wav", "mp3": "bgm-room.mp3" },
+    { "id": "replay", "title": "回放 · 无人归来", "file": "bgm-replay.wav", "mp3": "bgm-replay.mp3" },
+    { "id": "settings", "title": "设置 · 雪停之后", "file": "bgm-settings.wav", "mp3": "bgm-settings.mp3" },
+    { "id": "ingame1", "title": "局内 · 第一阶段 / 远处", "file": "bgm-ingame-1.wav", "mp3": "bgm-ingame-1.mp3" },
+    { "id": "ingame2", "title": "局内 · 第二阶段 / 逼近", "file": "bgm-ingame-2.wav", "mp3": "bgm-ingame-2.mp3" },
+    { "id": "ingame3", "title": "局内 · 第三阶段 / 双区", "file": "bgm-ingame-3.wav", "mp3": "bgm-ingame-3.mp3" }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "《成熟作品的借用》",
+  "subtitle": "第二版 · 成熟工业的借鉴",
+  "engine": "curated external tracks (user-provided)",
+  "generatedAt": "2026-10-23T03:30:00.000Z",
+  "tracks": [
+    { "id": "menu", "title": "Desolated", "bpm": null, "duration": 227.47, "file": "bgm2-menu.mp3" },
+    { "id": "room", "title": "赛伊德01", "bpm": null, "duration": 66, "file": "bgm2-room.mp3" },
+    { "id": "replay", "title": "解药公司", "bpm": null, "duration": 203.89, "file": "bgm2-replay.mp3" },
+    { "id": "settings", "title": "赛伊德03", "bpm": null, "duration": 67.2, "file": "bgm2-settings.mp3" },
+    { "id": "phase1", "title": "瘟疫公司主题曲", "bpm": null, "duration": 390.01, "file": "bgm2-phase1.mp3" },
+    { "id": "phase2", "title": "瘟疫公司·食血怪", "bpm": null, "duration": 178.05, "file": "bgm2-phase2.mp3" },
+    { "id": "phase3", "title": "赛伊德02", "bpm": null, "duration": 85.9, "file": "bgm2-phase3.mp3" }
+  ]
+}

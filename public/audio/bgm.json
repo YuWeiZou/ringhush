@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-10-23T03:30:00.000Z",
+  "defaultPack": "new",
+  "packs": {
+    "new": {
+      "name": "《成熟作品的借用》",
+      "subtitle": "第二版 · 成熟工业的借鉴",
+      "folder": "/audio/playlists/long-night-dam/",
+      "manifest": "/audio/playlists/long-night-dam/songbook.json",
+      "tracks": {
+        "menu": "/audio/playlists/long-night-dam/bgm2-menu.mp3",
+        "room": "/audio/playlists/long-night-dam/bgm2-room.mp3",
+        "replay": "/audio/playlists/long-night-dam/bgm2-replay.mp3",
+        "settings": "/audio/playlists/long-night-dam/bgm2-settings.mp3",
+        "ingame1": "/audio/playlists/long-night-dam/bgm2-phase1.mp3",
+        "ingame2": "/audio/playlists/long-night-dam/bgm2-phase2.mp3",
+        "ingame3": "/audio/playlists/long-night-dam/bgm2-phase3.mp3"
+      }
+    }
+  }
+}

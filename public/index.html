@@ -1,0 +1,485 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070a08">
+  <title>黑暗森林</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <canvas id="ambient-light" aria-hidden="true"></canvas>
+  <canvas id="ambient-ripple" aria-hidden="true"></canvas>
+  <div id="app">
+    <section id="menu-screen" class="screen menu-screen">
+      <div class="menu-layers" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="menu-card">
+        <div class="eyebrow">ONLINE BOARD GAME · 本地对局</div>
+        <h1>黑暗森林</h1>
+        <p class="tagline">
+          一条环形的黑暗森林。每个人都在打手电、开枪、摸黑移动。
+          手电照得到别人，也照得见自己。
+        </p>
+
+        <div class="menu-section">
+          <label>本地对局 · 房间</label>
+          <p class="hint">进入房间后添加 AI、设置回合计时。最多 8 人（人类 + AI）。</p>
+        </div>
+
+        <button id="start-local" class="primary" disabled>连接中…</button>
+
+        <div class="menu-row">
+          <button id="rules-btn" class="ghost">规则速览</button>
+          <button id="history-btn" class="ghost">历史对局</button>
+          <button id="settings-btn" class="ghost">辅助设置</button>
+          <button id="online-btn" class="ghost">局域网联机</button>
+        </div>
+
+        <div class="menu-foot">
+          <span>v2.6.1a19</span>
+          <span>规则书 v1.0.0</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="lobby-screen" class="screen lobby-screen hidden">
+      <div class="lobby-card">
+        <div class="eyebrow">ROOM · 对局准备</div>
+        <div class="lobby-head">
+          <h1>房间</h1>
+          <div id="lobby-meta" class="subtitle"></div>
+        </div>
+        <div id="lobby-slots" class="lobby-slots" data-ambient-no-tint></div>
+        <div class="lobby-controls">
+          <div class="lobby-timer">
+            <label for="lobby-timer">每回合操作时间</label>
+            <input id="lobby-timer" type="range" min="20" max="180" step="5" value="60">
+            <span id="lobby-timer-read">60 秒</span>
+          </div>
+          <button id="lobby-add-ai" class="ghost" disabled>+ 添加 AI</button>
+        </div>
+        <div id="lobby-note" class="hint"></div>
+        <div class="lobby-actions">
+          <button id="lobby-history" class="ghost">历史对局</button>
+          <button id="lobby-settings" class="ghost">辅助设置</button>
+          <button id="lobby-back" class="ghost">返回菜单</button>
+          <button id="lobby-start" class="primary" disabled>开始对局</button>
+        </div>
+        <div class="menu-foot">
+          <span>正式对局开始前可调整 AI 型号</span>
+          <span id="lobby-room-code"></span>
+        </div>
+      </div>
+      <div id="lobby-history-panel" class="lobby-history-panel hidden">
+        <div class="lobby-history-head">
+          <div>
+            <div class="eyebrow">LOCAL HISTORY · 本机</div>
+            <h2>历史对局复盘</h2>
+          </div>
+          <button id="lobby-history-close" class="ghost">收起</button>
+        </div>
+        <div id="lobby-history-list" class="history-list"></div>
+      </div>
+    </section>
+
+    <section id="game-screen" class="screen hidden">
+      <header class="topbar">
+        <div class="brand">黑暗森林</div>
+        <div class="status">
+          <span id="round-chip" class="chip strong">第 1 回合</span>
+          <span id="phase-chip" class="chip">行动选择</span>
+          <span id="spectator-chip" class="chip spectator hidden">上帝视角</span>
+          <span id="bomb-chip" class="chip danger hidden">轰炸预告</span>
+          <span id="terrain-chip" class="chip">—</span>
+          <span id="corpse-chip" class="chip danger hidden">脚下尸体</span>
+          <span id="timer-chip" class="chip hidden">--:--</span>
+        </div>
+        <div class="top-actions">
+          <button id="settings-btn-game" class="ghost">设置</button>
+          <button id="rules-btn-game" class="ghost">规则</button>
+          <button id="menu-btn" class="ghost">退出</button>
+        </div>
+      </header>
+
+      <main class="game-main">
+        <div class="board-area">
+          <div class="board-wrap">
+            <div id="board"></div>
+            <div id="board-center" class="board-center"></div>
+          </div>
+          <div class="board-caption">
+            <span><i class="legend-dot pillar"></i>柱 · 可藏</span>
+            <span><i class="legend-dot plain"></i>原 · 开阔</span>
+            <span><i class="legend-dot ruins"></i>废墟 · 仅原侧可穿</span>
+            <span><i class="legend-dot you"></i>你</span>
+            <span><i class="legend-dot obs"></i>观测红点 · R=回合</span>
+            <span><i class="legend-dot sound"></i>枪声外圈</span>
+            <span><i class="legend-dot bomb"></i>轰炸目标</span>
+          </div>
+          <div id="timeline" class="timeline hidden"></div>
+        </div>
+
+        <aside class="side">
+          <section class="panel">
+            <div class="panel-title">你 <strong id="you-name">—</strong></div>
+            <div id="you-grid" class="you-grid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">行动 <strong id="action-state">—</strong></div>
+            <div id="action-body"></div>
+            <div id="ai-proposal" class="ai-proposal hidden" data-ambient-no-tint></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">情报 <span class="badge">私密</span></div>
+            <div id="sound-summary" class="sound-summary"></div>
+            <div id="intel-list" class="intel-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">公开日志 <strong id="log-round"></strong></div>
+            <div id="log-list" class="log-list"></div>
+          </section>
+        </aside>
+      </main>
+    </section>
+
+    <section id="replay-screen" class="screen hidden">
+      <header class="topbar">
+        <div class="brand">黑暗森林 · 回放</div>
+        <div class="status">
+          <span id="replay-round-chip" class="chip strong">第 1 回合</span>
+          <span id="replay-phase-chip" class="chip">回合开始</span>
+          <span id="replay-room-chip" class="chip">—</span>
+        </div>
+        <div class="top-actions">
+          <button id="settings-btn-replay" class="ghost">设置</button>
+          <button id="replay-back-history" class="ghost">历史</button>
+          <button id="replay-back-menu" class="ghost">主菜单</button>
+        </div>
+      </header>
+
+      <main class="game-main">
+        <div class="board-area">
+          <div class="board-wrap">
+            <div id="replay-board"></div>
+            <div id="replay-center" class="board-center"></div>
+          </div>
+          <div class="board-caption">
+            <span><i class="legend-dot pillar"></i>柱</span>
+            <span><i class="legend-dot plain"></i>原</span>
+            <span><i class="legend-dot ruins"></i>废墟</span>
+            <span><i class="legend-dot bomb"></i>轰炸目标</span>
+            <span>上帝视角 · 全部位置与行动</span>
+          </div>
+          <div class="replay-slider-row">
+            <button id="replay-prev" class="ghost">上一回合</button>
+            <input id="replay-slider" type="range" min="1" max="1" value="1">
+            <button id="replay-next" class="ghost">下一回合</button>
+            <button id="replay-toggle-phase" class="ghost">看回合结束</button>
+          </div>
+        </div>
+
+        <aside class="side">
+          <section class="panel">
+            <div class="panel-title">回放 <strong id="replay-round-label">—</strong></div>
+            <div id="replay-meta" class="replay-meta"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-title">玩家 <strong id="replay-players-count"></strong></div>
+            <div id="replay-players" class="replay-players"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-title">尸体 <strong id="replay-corpses-count"></strong></div>
+            <div id="replay-corpses" class="replay-corpse-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-title">本回合行动</div>
+            <div id="replay-actions" class="replay-actions"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-title">全局事件</div>
+            <div id="replay-log" class="log-list replay-log"></div>
+          </section>
+        </aside>
+      </main>
+    </section>
+
+    <div id="result-overlay" class="overlay hidden">
+      <div id="result-modal" class="modal"></div>
+    </div>
+
+    <div id="gameover-overlay" class="overlay hidden">
+      <div id="gameover-modal" class="modal"></div>
+    </div>
+
+    <div id="history-overlay" class="overlay hidden">
+      <div class="modal history-modal">
+        <h2>历史对局</h2>
+        <p class="subtitle">保存在这台电脑上的完整上帝视角回放。删除只影响本机记录。</p>
+        <div id="history-list" class="history-list"></div>
+        <div class="modal-actions">
+          <button id="history-close" class="primary">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="online-overlay" class="overlay hidden">
+      <div class="modal online-modal">
+        <h2>局域网联机</h2>
+        <p class="subtitle">房主运行服务端；其他人打开同一地址，用房间码加入。最多 8 人（人类 + AI）。</p>
+        <label class="field-label">昵称
+          <input id="online-name" maxlength="16" placeholder="你的名字">
+        </label>
+        <label class="field-label">房间码（加入时填）
+          <input id="online-code" maxlength="8" placeholder="例如 ABCD" autocapitalize="characters">
+        </label>
+        <div class="modal-actions">
+          <button id="online-cancel" class="ghost">取消</button>
+          <button id="online-join" class="ghost">加入房间</button>
+          <button id="online-create" class="primary">创建房间</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="rules-overlay" class="overlay hidden">
+      <div class="modal">
+        <h2>规则速览</h2>
+        <div class="subtitle">完整规则见项目根目录《规则书.md》v1.0.0。这里是本地对局需要的最小版本。</div>
+        <div class="rules-copy">
+          <h3>地图</h3>
+          <p>2–8 人。总段数 <code>S = 3n</code>；若为偶数则 <code>3n+1</code>，保证 S 是奇数。柱的数量为 <code>floor(1.5n)</code>，其余为原。地图结构公开，玩家位置不公开。</p>
+
+          <h3>每回合</h3>
+          <p>所有人同时秘密选择行动，按“藏 → 观 → 溜 → 攻 → 死亡”结算。</p>
+          <ul>
+            <li><b>藏</b>：柱上隐身；原上也能按，但只是空挂，不隐身、不挡观测/枪。柱上藏身被单人溜进同一段会死。</li>
+            <li><b>观</b>：从自己开始沿一个方向照 L 段；段内有人且不是“柱 + 藏”就亮红点。原上玩家无论观/攻/溜都会被看到；柱上藏身不可见。只知道自己看到的结果。</li>
+            <li><b>攻</b>：选一个段和一个方向，攻击弧按方向计算。目标若在藏，不受伤；目标若在观/攻且暴露弧不包含你，不受伤；否则 1 点伤害。枪声不会公开精确段：其他存活玩家只得到“左/右”和左右分别响了几次。</li>
+            <li><b>溜</b>：移动 1 段（原上可 2 段）。杀藏身者、攻者，或没看见你来的观者。被溜杀死的攻会取消。</li>
+          </ul>
+
+          <h3>情报可视化</h3>
+          <ul>
+            <li>观测到有人的段会留下红点 + <code>R回合</code> 标签；同一段的历史观测会保留。</li>
+            <li>地图下方“情报回溯”时间条可以切到某一回合，或回到“全部”。</li>
+            <li>枪声不显示点：外圈只画左/右光弧，情报面板显示左右两侧分别响了几次。</li>
+          </ul>
+
+          <h3>几个关键细节</h3>
+          <ul>
+            <li>1 点生命，中弹即死。互射弧长相等时双死；双方都在柱上时，弧长更长的一方不受短的一方伤害。</li>
+            <li>多人同段按移动距离结算：最短者留下，其余死亡；并列最短全死。所以 2 人以上溜一个原地者，原地者反而活。</li>
+            <li>废墟区不能进入、不能停留、不能常规穿过；只有从相邻原侧可以直穿到另一侧。废墟不阻挡观/攻。</li>
+            <li>第 2 回合预告第 4 回合轰炸；之后每 3 回合一次。目标是一个完整的段，无差别，段上的人死，之后变成废墟。</li>
+          </ul>
+
+          <h3>胜利</h3>
+          <p>最后一名存活者获胜；同一回合全灭则平局。</p>
+
+          <h3>交流</h3>
+          <p>正式对局内没有聊天/交流渠道；AI 也只能使用自己的私密信息推理。</p>
+        </div>
+        <div class="modal-actions">
+          <button id="rules-close" class="primary">知道了</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="settings-overlay" class="overlay hidden">
+      <div class="modal settings-modal">
+        <h2>辅助设置</h2>
+        <p class="subtitle">分页设置只影响本机显示、音乐和 AI 连接，不改变规则或其他玩家的画面。</p>
+
+        <div class="settings-tabs" role="tablist" aria-label="设置分页">
+          <button class="settings-tab active" data-settings-page="audio" role="tab">音效</button>
+          <button class="settings-tab" data-settings-page="light" role="tab">光效</button>
+          <button class="settings-tab" data-settings-page="ai" role="tab">AI 连接</button>
+        </div>
+
+        <label class="setting-row" for="setting-volume">
+          <span>音乐音量</span>
+          <span class="setting-volume">
+            <input id="setting-volume" type="range" min="0" max="100" step="1" value="35">
+            <output id="setting-volume-value" for="setting-volume">35%</output>
+          </span>
+        </label>
+
+        <label class="setting-row" for="setting-music-pack">
+          <span>音乐专辑</span>
+          <select id="setting-music-pack">
+            <option value="new">《成熟作品的借用》</option>
+          </select>
+        </label>
+
+        <details class="setting-group settings-light-group">
+          <summary>背光</summary>
+          <div class="setting-group-body">
+            <label class="setting-row" for="setting-ambient">
+              <span>动态背景光效</span>
+              <span class="setting-volume">
+                <input id="setting-ambient" type="range" min="0" max="100" step="1" value="25">
+                <output id="setting-ambient-value" for="setting-ambient">25%</output>
+              </span>
+            </label>
+
+            <label class="setting-row" for="setting-glass">
+              <span>毛玻璃衰减</span>
+              <span class="setting-volume">
+                <input id="setting-glass" type="range" min="0" max="100" step="1" value="35">
+                <output id="setting-glass-value" for="setting-glass">35%</output>
+              </span>
+            </label>
+
+            <label class="setting-row" for="setting-diffusion">
+              <span>漫反射</span>
+              <span class="setting-volume">
+                <input id="setting-diffusion" type="range" min="0" max="100" step="1" value="50">
+                <output id="setting-diffusion-value" for="setting-diffusion">50%</output>
+              </span>
+            </label>
+
+            <label class="setting-row" for="setting-range">
+              <span>最大传播范围</span>
+              <span class="setting-volume">
+                <input id="setting-range" type="range" min="0" max="100" step="1" value="60">
+                <output id="setting-range-value" for="setting-range">60%</output>
+              </span>
+            </label>
+
+            <label class="setting-row" for="setting-ripple-decay">
+              <span>自然衰减</span>
+              <span class="setting-volume">
+                <input id="setting-ripple-decay" type="range" min="0.009" max="0.1" step="0.001" value="0.009">
+                <output id="setting-ripple-decay-value" for="setting-ripple-decay">0.009</output>
+              </span>
+            </label>
+
+            <label class="setting-row" for="setting-quality">
+              <span>光线精度</span>
+              <span class="setting-volume">
+                <input id="setting-quality" type="range" min="0" max="100" step="1" value="50">
+                <output id="setting-quality-value" for="setting-quality">中</output>
+              </span>
+            </label>
+          </div>
+        </details>
+
+        <details class="setting-group settings-light-group">
+          <summary>涟漪</summary>
+          <div class="setting-group-body">
+            <label class="setting-row" for="setting-ripple">
+              <span>涟漪强度</span>
+              <span class="setting-volume">
+                <input id="setting-ripple" type="range" min="0" max="100" step="1" value="50">
+                <output id="setting-ripple-value" for="setting-ripple">50%</output>
+              </span>
+            </label>
+
+            <label class="setting-row" for="setting-ripple-incident">
+              <span>入射衰减</span>
+              <span class="setting-volume">
+                <input id="setting-ripple-incident" type="range" min="0" max="100" step="1" value="50">
+                <output id="setting-ripple-incident-value" for="setting-ripple-incident">50%</output>
+              </span>
+            </label>
+
+            <label class="setting-row" for="setting-ripple-reflect">
+              <span>反射衰减</span>
+              <span class="setting-volume">
+                <input id="setting-ripple-reflect" type="range" min="0" max="100" step="1" value="50">
+                <output id="setting-ripple-reflect-value" for="setting-ripple-reflect">50%</output>
+              </span>
+            </label>
+          </div>
+        </details>
+
+        <details class="setting-group settings-light-group">
+          <summary>界面与文字</summary>
+          <div class="setting-group-body">
+            <label class="setting-row" for="setting-tint-threshold">
+              <span>文字反色阈值</span>
+              <span class="setting-volume">
+                <input id="setting-tint-threshold" type="range" min="0" max="100" step="1" value="50">
+                <output id="setting-tint-threshold-value" class="tint-threshold-preview" for="setting-tint-threshold">黑 白</output>
+              </span>
+            </label>
+
+            <label class="setting-row" for="setting-font">
+              <span>界面字号</span>
+              <select id="setting-font">
+                <option value="1">100%</option>
+                <option value="1.15">115%</option>
+                <option value="1.3">130%</option>
+                <option value="1.45">145%</option>
+              </select>
+            </label>
+
+            <label class="setting-toggle">
+              <input id="setting-contrast" type="checkbox">
+              <span>高对比度：加粗文字与边框，减少低对比灰色</span>
+            </label>
+
+            <label class="setting-toggle">
+              <input id="setting-labels" type="checkbox">
+              <span>棋盘大标签：放大段号、地形字样、尸体/玩家标签</span>
+            </label>
+
+            <label class="setting-toggle">
+              <input id="setting-hide-cursor" type="checkbox">
+              <span>游戏内隐藏鼠标（光效 0% 时强制显示，选项不可用）</span>
+            </label>
+
+            <label class="setting-toggle">
+              <input id="setting-motion" type="checkbox">
+              <span>减少动画：关闭淡入、脉冲和过渡效果</span>
+            </label>
+
+            <div class="setting-note">
+              键盘：<b>1</b> 藏 · <b>2</b> 观 · <b>3</b> 攻 · <b>4</b> 溜 · <b>Enter</b> 提交
+            </div>
+          </div>
+        </details>
+
+        <label class="setting-toggle">
+          <input id="setting-bridge-enabled" type="checkbox">
+          <span>启用外部 AI 通道：在本机打开 Bridge，允许外部模型读取仅你视角的局面。</span>
+        </label>
+
+        <label class="setting-row" for="setting-bridge-mode">
+          <span>外部 AI 模式</span>
+          <select id="setting-bridge-mode">
+            <option value="manual">手动确认 AI 提议</option>
+            <option value="auto">AI 直接提交</option>
+          </select>
+        </label>
+
+        <div class="modal-actions">
+          <button id="settings-reset" class="ghost">恢复默认</button>
+          <button id="settings-close" class="primary">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="connection-overlay" class="overlay hidden connection-overlay">
+      <div class="modal connection-modal">
+        <h2 id="connection-title">连接已断开</h2>
+        <p id="connection-message" class="subtitle">服务器可能已停止或重启。请刷新页面重试；如果反复出现，查看启动窗口和 logs\server-errors.log。</p>
+        <div class="modal-actions">
+          <button id="connection-reload" class="primary">刷新重连</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <div id="light-preview" class="light-preview hidden" aria-label="背光预览">
+    <div class="light-preview-head"><span>背光预览</span><em>拖动</em></div>
+    <canvas id="light-preview-canvas" width="180" height="120"></canvas>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

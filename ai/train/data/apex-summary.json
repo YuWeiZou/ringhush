@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-10-22T00:04:37.962Z",
+  "generation": "g3",
+  "games": 150,
+  "counts": [
+    4
+  ],
+  "states": 5626,
+  "rows": 209776,
+  "skipped": 0,
+  "byType": {
+    "hide": 2174,
+    "observe": 1694,
+    "attack": 991,
+    "slip": 767
+  },
+  "featureDim": 58,
+  "out": "D:\\stuff\\DSH\\001\\黑暗森林\\ai\\train\\data\\apex-g3.jsonl"
+}

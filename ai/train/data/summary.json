@@ -1,0 +1,34 @@
+﻿{
+    "generatedAt":  "2026-10-21T10:58:54.827Z",
+    "games":  500,
+    "counts":  [
+                   2,
+                   4,
+                   8
+               ],
+    "models":  [
+                   {
+                       "id":  "adaptive",
+                       "version":  "2.0.0"
+                   },
+                   {
+                       "id":  "balanced",
+                       "version":  "2.0.0"
+                   },
+                   {
+                       "id":  "basic",
+                       "version":  "1.0.0"
+                   },
+                   {
+                       "id":  "hunter",
+                       "version":  "2.0.0"
+                   },
+                   {
+                       "id":  "survivor",
+                       "version":  "2.0.0"
+                   }
+               ],
+    "rows":  92521,
+    "out":  "D:\\stuff\\DSH\\001\\黑暗森林\\ai\\train\\data\\decisions.jsonl",
+    "gameCount":  1500
+}
